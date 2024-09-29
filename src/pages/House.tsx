@@ -1,8 +1,18 @@
 import {
+  Autocomplete,
+  AutocompleteItem,
   Button,
   Chip,
+  DatePicker,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Pagination,
+  Select,
+  SelectItem,
   SortDescriptor,
   Spinner,
   Table,
@@ -12,23 +22,34 @@ import {
   TableHeader,
   TableRow,
   Tooltip,
+  useDisclosure,
 } from "@nextui-org/react"
-import React, { useEffect, useState } from "react"
+import React, { FormEvent, useContext, useEffect, useState } from "react"
 import { EditIcon } from "../components/EditIcon"
 import { SearchIcon } from "../components/SearchIcon"
 import { PlusIcon } from "../components/PlusIcon"
+import { AppContext } from "../contexts/AppContext"
+import { toast } from "react-toastify"
+import { getLocalTimeZone, today } from "@internationalized/date"
+import { format } from "date-fns"
+import { pre } from "framer-motion/client"
 
 type HouseType = {
   id: number
   user: User
   address: string
   status: string
+  user_id: number | null
 }
 
 interface FormData {
-  user_id: number
+  user: User
+  user_id: number | null
   address: string
   status: string
+
+  start_date: string
+  end_date: string
 }
 
 interface Errors {
@@ -44,6 +65,7 @@ interface User {
 
 export default function House() {
   const [houses, setHouses] = useState<HouseType[]>([])
+  const [selectUser, setSelectUser] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [filterValue, setFilterValue] = useState("")
   const [page, setPage] = useState(1)
@@ -68,6 +90,20 @@ export default function House() {
     getHouses()
   }, [])
 
+  useEffect(() => {
+    const getUsers = async () => {
+      const response = await fetch("/api/users")
+      const data = await response.json()
+      setIsLoading(false)
+
+      if (response.ok) {
+        setSelectUser(data.users)
+      }
+    }
+
+    getUsers()
+  }, [])
+
   const columns = [
     {
       key: "user_id",
@@ -84,6 +120,17 @@ export default function House() {
     {
       key: "actions",
       header: "Actions",
+    },
+  ]
+
+  const selectStatus = [
+    {
+      key: "Dihuni",
+      value: "Dihuni",
+    },
+    {
+      key: "Kosong",
+      value: "Kosong",
     },
   ]
 
@@ -130,7 +177,7 @@ export default function House() {
             <Tooltip content="Edit user">
               <span
                 className="text-lg text-default-400 cursor-pointer active:opacity-50"
-                //   onClick={() => handleEditOpen(penghuni)}
+                onClick={() => handleEditOpen(house)}
               >
                 <EditIcon />
               </span>
@@ -138,6 +185,76 @@ export default function House() {
           </div>
         )
     }
+  }
+
+  //   edit modal
+  const [editFormData, setEditFormData] = useState<FormData>({
+    user: { id: 0, full_name: "" },
+    user_id: null,
+    address: "",
+    status: "",
+    start_date: "",
+    end_date: "",
+  })
+  const [editErrors, setEditErrors] = useState<Errors>({})
+  const [editHouseId, setEditHouseId] = useState<number | null>(null)
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = useDisclosure()
+
+  const handleEditOpen = (house: HouseType) => {
+    setEditHouseId(house.id)
+    setEditFormData({
+      user: house.user,
+      user_id: house.user ? house.user.id : null,
+      address: house.address,
+      status: house.status,
+      start_date: "", // Provide default value or fetch from house if available
+      end_date: "", // Provide default value or fetch from house if available
+    })
+
+    // Set field state untuk autocomplete
+    setFieldState({
+      selectedKey: house.user ? house.user.id : null, // Mengatur selectedKey dengan user_id dari house
+      inputValue: house.user ? house.user.full_name : "",
+      items: selectUser, // Pastikan items diisi
+    })
+    onEditOpen()
+  }
+
+  const handleEdit = async (e: FormEvent) => {
+    e.preventDefault()
+
+    if (editHouseId === null) return
+
+    const response = await fetch(`api/houses/${editHouseId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify(editFormData),
+    })
+
+    const data = await response.json()
+
+    if (data.error) {
+      toast.error(data.message)
+      setEditErrors(data.errors)
+    } else {
+      toast.success(data.message)
+      setHouses((prevHouse) =>
+        prevHouse.map((house) =>
+          house.id === editHouseId ? { ...house, ...editFormData } : house
+        )
+      )
+      onEditClose()
+    }
+    setEditHouseId(null)
+    setEditFormData({})
   }
 
   const filteredItems = React.useMemo(() => {
@@ -209,7 +326,7 @@ export default function House() {
             color="primary"
             variant="flat"
             endContent={<PlusIcon />}
-            // onPress={() => onOpen()}
+            onPress={() => onOpen()}
           >
             Add New
           </Button>
@@ -233,6 +350,46 @@ export default function House() {
       </div>
     </div>
   )
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const backdrop = "blur"
+  const token = useContext(AppContext)
+  const [formData, setFormData] = useState<FormData>({
+    user: { id: 0, full_name: "" },
+    user_id: null,
+    address: "",
+    status: "",
+    start_date: "",
+    end_date: "",
+  })
+
+  const [errors, setErrors] = useState<Errors>({})
+
+  async function handleCreate(e: FormEvent) {
+    e.preventDefault()
+    alert("Data berhasil ditambahkan")
+    const response = await fetch("api/houses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+
+    const data = await response.json()
+
+    if (data.error) {
+      toast.error(data.message)
+      setErrors(data.errors)
+    } else {
+      toast.success(data.message)
+      setHouses((prevHouse) => [...prevHouse, data.house])
+      setFormData({})
+      onClose()
+    }
+  }
 
   const onNextPage = () => {
     if (page < pages) {
@@ -279,39 +436,317 @@ export default function House() {
     </div>
   )
 
+  const [isEditMode, setIsEditMode] = useState(isOpen ? false : true)
+  const [fieldState, setFieldState] = useState({
+    selectedKey: isEditMode ? editFormData.user_id || null : null,
+    inputValue: "",
+    items: selectUser,
+  })
+
+  const onSelectionChange = (key) => {
+    console.log("Selected key:", key)
+
+    const selectedUser = selectUser.find((user) => user.id === Number(key))
+
+    if (!isEditMode) {
+      setFormData((prev) => ({
+        ...prev,
+        user: selectedUser || { id: 0, full_name: "" },
+        user_id: selectedUser ? selectedUser.id : null, // Update user_id
+      }))
+    } else {
+      setEditFormData((prev) => ({
+        ...prev,
+        user: selectedUser || { id: 0, full_name: "" },
+        user_id: selectedUser.id, // Update user_id
+      }))
+    }
+
+    setFieldState((prevState) => ({
+      ...prevState,
+      inputValue: selectedUser?.full_name || "",
+      selectedKey: selectedUser ? selectedUser.id : null,
+    }))
+
+    console.log("Selected User ditemukan:", selectedUser)
+  }
+
+  useEffect(() => {
+    console.log("Selected Key setelah perubahan:", fieldState.selectedKey)
+  }, [fieldState.selectedKey])
+
+  useEffect(() => {
+    console.log("hasil form data:", formData)
+    console.log("hasil edit form data:", editFormData)
+  }, [formData, editFormData])
+
+  const onInputChange = (value: string) => {
+    const filteredItems = selectUser.filter((item) =>
+      item.full_name.toLowerCase().startsWith(value.toLowerCase())
+    )
+
+    setFieldState((prevState) => ({
+      ...prevState,
+      inputValue: value,
+      selectedKey: value === "" ? null : prevState.selectedKey,
+      items: filteredItems, // Perbarui item dengan hasil filter
+    }))
+  }
+
   return (
-    <Table
-      aria-label="Example table with client side sorting"
-      isHeaderSticky
-      topContent={topContent}
-      topContentPlacement="outside"
-      bottomContent={bottomContent}
-      bottomContentPlacement="outside"
-      sortDescriptor={sortDescriptor}
-      onSortChange={setSortDescriptor}
-      classNames={{
-        wrapper: "max-h-[382px]",
-      }}
-    >
-      <TableHeader columns={columns}>
-        {(column) => (
-          <TableColumn key={column.key}>{column.header}</TableColumn>
-        )}
-      </TableHeader>
-      <TableBody
-        isLoading={isLoading}
-        loadingContent={<Spinner label="Loading..." />}
-        emptyContent={"No rows to display."}
-        items={sortedItems}
+    <>
+      <Table
+        aria-label="Example table with client side sorting"
+        isHeaderSticky
+        topContent={topContent}
+        topContentPlacement="outside"
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        sortDescriptor={sortDescriptor}
+        onSortChange={setSortDescriptor}
+        classNames={{
+          wrapper: "max-h-[382px]",
+        }}
       >
-        {(item) => (
-          <TableRow key={item.id}>
-            {(columnKey) => (
-              <TableCell>{renderCell(item, columnKey)}</TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn key={column.key}>{column.header}</TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          isLoading={isLoading}
+          loadingContent={<Spinner label="Loading..." />}
+          emptyContent={"No rows to display."}
+          items={sortedItems}
+        >
+          {(item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      <Modal backdrop={backdrop} isOpen={isOpen} onClose={onClose}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Add New Rumah
+              </ModalHeader>
+              <form onSubmit={handleCreate}>
+                <ModalBody>
+                  <Autocomplete
+                    variant="bordered"
+                    label="Select Penghuni"
+                    className="mb-4"
+                    inputValue={fieldState.inputValue}
+                    items={fieldState.items}
+                    selectedKey={fieldState.selectedKey}
+                    onInputChange={onInputChange}
+                    onSelectionChange={onSelectionChange}
+                  >
+                    {(item) => (
+                      <AutocompleteItem key={item.id} value={item.id}>
+                        {item.full_name}
+                      </AutocompleteItem>
+                    )}
+                  </Autocomplete>
+
+                  <Input
+                    type="text"
+                    label="Address"
+                    id="address"
+                    variant="bordered"
+                    className="mb-4"
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                  />
+                  {errors.address && <p className="error">{errors.address}</p>}
+
+                  <Select
+                    label="Select Status"
+                    id="status"
+                    variant="bordered"
+                    className="mb-4"
+                    value={formData.status || ""}
+                    onChange={(e) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        status: e.target.value,
+                      }))
+                    }}
+                  >
+                    {selectStatus.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.key}
+                      </SelectItem>
+                    ))}
+                  </Select>
+
+                  <DatePicker
+                    className="bordered"
+                    label="Tanggal Mulai"
+                    minValue={today(getLocalTimeZone())}
+                    defaultValue={today(getLocalTimeZone()).subtract({
+                      days: 1,
+                    })}
+                    onChange={(date) => {
+                      const formatStartDate = format(date, "yyyy-MM-dd")
+
+                      setFormData((prev) => ({
+                        ...prev,
+                        start_date: formatStartDate, // Simpan nilai tanggal mulai di formData
+                      }))
+                    }}
+                  />
+
+                  <DatePicker
+                    className="bordered"
+                    label="Tanggal Berakhir"
+                    minValue={today(getLocalTimeZone())}
+                    defaultValue={today(getLocalTimeZone()).subtract({
+                      days: 1,
+                    })}
+                    onChange={(date) => {
+                      const formatEndDate = format(date, "yyyy-MM-dd")
+
+                      setFormData((prev) => ({
+                        ...prev,
+                        end_date: formatEndDate, // Simpan nilai tanggal mulai di formData
+                      }))
+                    }}
+                  />
+                </ModalBody>
+                <ModalFooter>
+                  <Button color="danger" variant="light" onPress={onClose}>
+                    Close
+                  </Button>
+                  <Button color="primary" type="submit">
+                    Save
+                  </Button>
+                </ModalFooter>
+              </form>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal backdrop={backdrop} isOpen={isEditOpen} onClose={onEditClose}>
+        <ModalContent>
+          {(onEditClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Edit Rumah
+              </ModalHeader>
+              <form onSubmit={handleEdit}>
+                <ModalBody>
+                  <Autocomplete
+                    variant="bordered"
+                    label="Select Penghuni"
+                    className="mb-4"
+                    inputValue={fieldState.inputValue}
+                    items={fieldState.items}
+                    selectedKey={fieldState.selectedKey}
+                    onInputChange={onInputChange}
+                    onSelectionChange={onSelectionChange}
+                  >
+                    {(item) => (
+                      <AutocompleteItem key={item.id} value={item.id}>
+                        {item.full_name}
+                      </AutocompleteItem>
+                    )}
+                  </Autocomplete>
+
+                  <Input
+                    type="text"
+                    label="Address"
+                    id="address"
+                    variant="bordered"
+                    className="mb-4"
+                    value={editFormData.address}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        address: e.target.value,
+                      })
+                    }
+                  />
+                  {editErrors.address && (
+                    <p className="error">{editErrors.address}</p>
+                  )}
+
+                  <Select
+                    label="Select Status"
+                    id="status"
+                    variant="bordered"
+                    className="mb-4"
+                    value={editFormData.status}
+                    onChange={(e) => {
+                      setEditFormData({
+                        ...editFormData,
+                        status: e.target.value,
+                      })
+                    }}
+                  >
+                    {selectStatus.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.key}
+                      </SelectItem>
+                    ))}
+                  </Select>
+
+                  <DatePicker
+                    className="bordered"
+                    label="Tanggal Mulai"
+                    minValue={today(getLocalTimeZone())}
+                    defaultValue={today(getLocalTimeZone()).subtract({
+                      days: 1,
+                    })}
+                    onChange={(date) => {
+                      const formatStartDate = format(date, "yyyy-MM-dd")
+
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        start_date: formatStartDate, // Simpan nilai tanggal mulai di formData
+                      }))
+                    }}
+                  />
+
+                  <DatePicker
+                    className="bordered"
+                    label="Tanggal Berakhir"
+                    minValue={today(getLocalTimeZone())}
+                    defaultValue={today(getLocalTimeZone()).subtract({
+                      days: 1,
+                    })}
+                    onChange={(date) => {
+                      const formatEndDate = format(date, "yyyy-MM-dd")
+
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        end_date: formatEndDate, // Simpan nilai tanggal mulai di formData
+                      }))
+                    }}
+                  />
+                </ModalBody>
+                <ModalFooter>
+                  <Button color="danger" variant="light" onPress={onEditClose}>
+                    Close
+                  </Button>
+                  <Button color="primary" type="submit">
+                    Save
+                  </Button>
+                </ModalFooter>
+              </form>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   )
 }
