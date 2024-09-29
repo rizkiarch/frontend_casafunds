@@ -59,49 +59,53 @@ export default function Layout() {
         isMenuOpen={isMenuOpen}
         onMenuOpenChange={setIsMenuOpen}
       >
-        <NavbarContent className="lg:hidden" justify="start">
-          <NavbarMenuToggle
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          />
-        </NavbarContent>
-
-        <NavbarContent className="hidden pr-3" justify="center">
-          <NavbarBrand>
-            <p className="font-bold text-inherit">CASAFUNDS</p>
-          </NavbarBrand>
-        </NavbarContent>
-
-        <NavbarContent className=" sm:flex gap-4" justify="center">
-          <NavbarBrand>
-            <p className="font-bold text-inherit">CASAFUNDS</p>
-          </NavbarBrand>
-
-          {menuItems.map((item, index) => (
-            <NavbarItem key={index} isActive={location.pathname === item.path}>
-              <Link color="foreground" to={item.path}>
-                {item.label}
-              </Link>
-            </NavbarItem>
-          ))}
-        </NavbarContent>
-
         {user ? (
-          <NavbarContent justify="end">
-            <NavbarItem>
-              <form onSubmit={handleLogout}>
-                <button color="warning" className="btn btn-sm">
-                  Log Out
-                </button>
-              </form>
-            </NavbarItem>
-          </NavbarContent>
+          <>
+            <NavbarContent className="lg:hidden" justify="start">
+              <NavbarMenuToggle
+                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              />
+            </NavbarContent>
+
+            <NavbarContent className="hidden pr-3" justify="center">
+              <NavbarBrand>
+                <p className="font-bold text-inherit">CASAFUNDS</p>
+              </NavbarBrand>
+            </NavbarContent>
+            <NavbarContent className=" sm:flex gap-4" justify="center">
+              <NavbarBrand>
+                <p className="font-bold text-inherit">CASAFUNDS</p>
+              </NavbarBrand>
+
+              {menuItems.map((item, index) => (
+                <NavbarItem
+                  key={index}
+                  isActive={location.pathname === item.path}
+                >
+                  <Link color="foreground" to={item.path}>
+                    {item.label}
+                  </Link>
+                </NavbarItem>
+              ))}
+            </NavbarContent>
+
+            <NavbarContent justify="end">
+              <NavbarItem>
+                <form onSubmit={handleLogout}>
+                  <Button color="warning" className="btn btn-sm" type="submit">
+                    Log Out
+                  </Button>
+                </form>
+              </NavbarItem>
+            </NavbarContent>
+          </>
         ) : (
           <NavbarContent justify="end">
-            <NavbarItem className="hidden lg:flex">
-              <Link href="#">Login</Link>
+            <NavbarItem className="lg:flex">
+              <Link to="/login">Login</Link>
             </NavbarItem>
             <NavbarItem>
-              <Button as={Link} color="warning" href="#" variant="flat">
+              <Button as={Link} color="warning" to="/register" variant="flat">
                 Sign Up
               </Button>
             </NavbarItem>
