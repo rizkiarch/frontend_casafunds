@@ -329,7 +329,6 @@ export default function TableCategories() {
 
   //   add data to database
   const token = useContext(AppContext)
-  const navigate = useNavigate()
   const [formData, setFormData] = useState<FormData>({
     name: "",
   })
@@ -355,7 +354,6 @@ export default function TableCategories() {
       toast.error(data.error)
       setError(data.error)
     } else {
-      console.log(data)
       toast.success(data.message)
       setCategories((prevCategories) => [...prevCategories, data.category])
       setFormData({ name: "" })

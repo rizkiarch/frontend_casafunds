@@ -6,6 +6,8 @@ import Dashboard from "./pages/Dashboard"
 import Login from "./pages/auth/Login"
 import Register from "./pages/auth/Register"
 import Categories from "./pages/Categories"
+import Penghuni from "./pages/Penghuni"
+import House from "./pages/House"
 
 function App() {
   const { user } = useContext(AppContext)!
@@ -21,6 +23,8 @@ function App() {
           />
           <Route path="/login" element={user ? <Dashboard /> : <Login />} />
 
+          <Route path="/penghuni" element={user ? <Penghuni /> : <Login />} />
+          <Route path="/rumah" element={user ? <House /> : <Login />} />
           <Route
             path="/categories"
             element={user ? <Categories /> : <Login />}
