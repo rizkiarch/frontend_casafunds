@@ -89,7 +89,10 @@ export default function TableCategories() {
               </span>
             </Tooltip>
             <Tooltip color="danger" content="Delete user">
-              <span className="text-lg text-danger cursor-pointer active:opacity-50">
+              <span
+                className="text-lg text-danger cursor-pointer active:opacity-50"
+                onClick={() => handleDeleteOpen(category.id)}
+              >
                 <DeleteIcon />
               </span>
             </Tooltip>
@@ -146,6 +149,45 @@ export default function TableCategories() {
       setEditFormData({ name: "" })
       setEditCategoryId(null)
       onEditClose()
+    }
+  }
+
+  //   modal delete code
+  const [deleteCategoryId, setDeleteCategoryId] = useState<number | null>(null)
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure()
+
+  const handleDeleteOpen = (categoryId: number) => {
+    setDeleteCategoryId(categoryId)
+    onDeleteOpen()
+  }
+
+  const handleDelete = async () => {
+    if (deleteCategoryId === null) return
+
+    const result = await fetch(`/api/categories/${deleteCategoryId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    })
+
+    const data = await result.json()
+
+    if (data.error) {
+      toast.error(data.error)
+    } else {
+      toast.success(data.message)
+      setCategories((prevCategories) =>
+        prevCategories.filter((category) => category.id !== deleteCategoryId)
+      )
+      setDeleteCategoryId(null)
+      onDeleteClose()
     }
   }
 
@@ -426,6 +468,29 @@ export default function TableCategories() {
                   </Button>
                 </ModalFooter>
               </form>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal backdrop={backdrop} isOpen={isDeleteOpen} onClose={onDeleteClose}>
+        <ModalContent>
+          {(onDeleteClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Delete Category
+              </ModalHeader>
+              <ModalBody>
+                <p>Are you sure you want to delete this category?</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onDeleteClose}>
+                  Cancel
+                </Button>
+                <Button color="danger" onPress={handleDelete}>
+                  Delete
+                </Button>
+              </ModalFooter>
             </>
           )}
         </ModalContent>

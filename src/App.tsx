@@ -5,7 +5,7 @@ import Layout from "./pages/Layout"
 import Dashboard from "./pages/Dashboard"
 import Login from "./pages/auth/Login"
 import Register from "./pages/auth/Register"
-import TableCategories from "./pages/category/TableCategories"
+import Categories from "./pages/Categories"
 
 function App() {
   const { user } = useContext(AppContext)!
@@ -23,7 +23,7 @@ function App() {
 
           <Route
             path="/categories"
-            element={user ? <TableCategories /> : <Login />}
+            element={user ? <Categories /> : <Login />}
           />
         </Route>
       </Routes>
