@@ -27,7 +27,6 @@ import {
 } from "@nextui-org/table"
 import React, { FormEvent, useContext, useEffect, useState } from "react"
 import { EditIcon } from "../components/EditIcon"
-import { DeleteIcon } from "../components/DeleteIcon"
 import { SearchIcon } from "../components/SearchIcon"
 import { PlusIcon } from "../components/PlusIcon"
 import { AppContext } from "../contexts/AppContext"
@@ -345,8 +344,6 @@ export default function Penghuni() {
     onEditOpen()
   }
 
-  console.log(editFormData.role)
-
   const handleEdit = async (e: FormEvent) => {
     e.preventDefault()
 
@@ -603,7 +600,7 @@ export default function Penghuni() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Add New Category
+                Add New Penghuni
               </ModalHeader>
               <form onSubmit={handleCreate}>
                 <ModalBody>
@@ -768,7 +765,7 @@ export default function Penghuni() {
           {(onEditClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Edit Category
+                Edit Penghuni
               </ModalHeader>
               <form onSubmit={handleEdit}>
                 <ModalBody>

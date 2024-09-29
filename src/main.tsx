@@ -7,10 +7,10 @@ import AppProvider from "./contexts/AppContext.tsx"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AppProvider>
-      <NextUIProvider>
+    <NextUIProvider>
+      <AppProvider>
         <App />
-      </NextUIProvider>
-    </AppProvider>
+      </AppProvider>
+    </NextUIProvider>
   </React.StrictMode>
 )

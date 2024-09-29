@@ -40,6 +40,9 @@ type HouseType = {
   address: string
   status: string
   user_id: number | null
+
+  start_date: string
+  end_date: string
 }
 
 interface FormData {
@@ -66,7 +69,7 @@ interface User {
 export default function House() {
   const [houses, setHouses] = useState<HouseType[]>([])
   const [selectUser, setSelectUser] = useState<User[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [filterValue, setFilterValue] = useState("")
   const [page, setPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(5)
@@ -89,6 +92,8 @@ export default function House() {
 
     getHouses()
   }, [])
+
+  // console.log(houses)
 
   useEffect(() => {
     const getUsers = async () => {
@@ -118,6 +123,14 @@ export default function House() {
       header: "Status",
     },
     {
+      key: "start_date",
+      header: "Tanggal Di Huni",
+    },
+    {
+      key: "end_date",
+      header: "Tanggal Berakhir",
+    },
+    {
       key: "actions",
       header: "Actions",
     },
@@ -136,6 +149,17 @@ export default function House() {
 
   const renderCell = (house: HouseType, columnKey: React.Key) => {
     const cellValue = house[columnKey as keyof HouseType]
+    console.log(house)
+
+    const formatDate = (date: string | Date) => {
+      if (!date) return "Tanggal Tidak Tersedia"
+      const formattedDate = new Intl.DateTimeFormat("id-ID", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }).format(new Date(date))
+      return formattedDate
+    }
 
     switch (columnKey) {
       case "user_id":
@@ -170,7 +194,18 @@ export default function House() {
             )}
           </>
         )
-
+      case "start_date":
+        return cellValue ? (
+          <span>{formatDate(cellValue as string)}</span>
+        ) : (
+          <span>Tanggal Tidak Tersedia</span>
+        )
+      case "end_date":
+        return cellValue ? (
+          <span>{formatDate(cellValue as string)}</span>
+        ) : (
+          <span>Tanggal Tidak Tersedia</span>
+        )
       case "actions":
         return (
           <div className="relative flex items-center gap-2">
@@ -196,6 +231,7 @@ export default function House() {
     start_date: "",
     end_date: "",
   })
+
   const [editErrors, setEditErrors] = useState<Errors>({})
   const [editHouseId, setEditHouseId] = useState<number | null>(null)
   const {
@@ -385,9 +421,21 @@ export default function House() {
       setErrors(data.errors)
     } else {
       toast.success(data.message)
-      setHouses((prevHouse) => [...prevHouse, data.house])
-      setFormData({})
-      onClose()
+      const reloadResponse = await fetch("api/houses", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const housesData = await reloadResponse.json()
+      if (housesData.error) {
+        toast.error("Gagal memuat ulang data rumah.")
+      } else {
+        setHouses(housesData.houses) // Update state dengan semua data houses
+        setFormData({}) // Reset form
+        onClose() // Tutup modal
+      }
     }
   }
 
@@ -436,56 +484,74 @@ export default function House() {
     </div>
   )
 
-  const [isEditMode, setIsEditMode] = useState(isOpen ? false : true)
+  // Store input value and items
   const [fieldState, setFieldState] = useState({
-    selectedKey: isEditMode ? editFormData.user_id || null : null,
+    selectedKey: formData.user_id,
     inputValue: "",
     items: selectUser,
   })
 
-  const onSelectionChange = (key) => {
-    console.log("Selected key:", key)
-
+  const onSelectionChange = (key: React.Key) => {
     const selectedUser = selectUser.find((user) => user.id === Number(key))
-
-    if (!isEditMode) {
-      setFormData((prev) => ({
-        ...prev,
-        user: selectedUser || { id: 0, full_name: "" },
-        user_id: selectedUser ? selectedUser.id : null, // Update user_id
-      }))
-    } else {
-      setEditFormData((prev) => ({
-        ...prev,
-        user: selectedUser || { id: 0, full_name: "" },
-        user_id: selectedUser.id, // Update user_id
-      }))
-    }
+    setFormData((prev) => ({
+      ...prev,
+      user: selectedUser || { id: 0, full_name: "" },
+      user_id: selectedUser ? selectedUser.id : null, // Update user_id
+    }))
 
     setFieldState((prevState) => ({
       ...prevState,
       inputValue: selectedUser?.full_name || "",
       selectedKey: selectedUser ? selectedUser.id : null,
     }))
-
-    console.log("Selected User ditemukan:", selectedUser)
   }
 
-  useEffect(() => {
-    console.log("Selected Key setelah perubahan:", fieldState.selectedKey)
-  }, [fieldState.selectedKey])
-
-  useEffect(() => {
-    console.log("hasil form data:", formData)
-    console.log("hasil edit form data:", editFormData)
-  }, [formData, editFormData])
-
   const onInputChange = (value: string) => {
+    setFieldState((prevState) => {
+      // Filter item berdasarkan input
+      const filteredItems = selectUser.filter((item) =>
+        item.full_name.toLowerCase().startsWith(value.toLowerCase())
+      )
+
+      return {
+        ...prevState,
+        inputValue: value,
+        selectedKey: value === "" ? null : prevState.selectedKey,
+        items: filteredItems, // Perbarui item dengan hasil filter
+      }
+    })
+  }
+
+  //   edit input value
+  const [fieldStateEdit, setFieldStateEdit] = useState({
+    selectedKey: editFormData.user_id || null,
+    inputValue: "",
+    items: selectUser,
+  })
+
+  // console.log(fieldStateEdit.selectedKey)
+
+  const onSelectionChangeEdit = (key) => {
+    const selectedUser = selectUser.find((user) => user.id === Number(key))
+    setEditFormData((prev) => ({
+      ...prev,
+      user: selectedUser || { id: 0, full_name: "" },
+      user_id: selectedUser ? selectedUser.id : null, // Update user_id
+    }))
+
+    setFieldStateEdit((prevState) => ({
+      ...prevState,
+      inputValue: selectedUser?.full_name || "",
+      selectedKey: selectedUser ? selectedUser.id : null,
+    }))
+  }
+
+  const onInputChangeEdit = (value) => {
     const filteredItems = selectUser.filter((item) =>
       item.full_name.toLowerCase().startsWith(value.toLowerCase())
     )
 
-    setFieldState((prevState) => ({
+    setFieldStateEdit((prevState) => ({
       ...prevState,
       inputValue: value,
       selectedKey: value === "" ? null : prevState.selectedKey,
@@ -556,6 +622,7 @@ export default function House() {
                   </Autocomplete>
 
                   <Input
+                    isRequired
                     type="text"
                     label="Address"
                     id="address"
@@ -569,6 +636,7 @@ export default function House() {
                   {errors.address && <p className="error">{errors.address}</p>}
 
                   <Select
+                    isRequired
                     label="Select Status"
                     id="status"
                     variant="bordered"
@@ -589,6 +657,7 @@ export default function House() {
                   </Select>
 
                   <DatePicker
+                    isRequired
                     className="bordered"
                     label="Tanggal Mulai"
                     minValue={today(getLocalTimeZone())}
@@ -649,11 +718,11 @@ export default function House() {
                     variant="bordered"
                     label="Select Penghuni"
                     className="mb-4"
-                    inputValue={fieldState.inputValue}
-                    items={fieldState.items}
-                    selectedKey={fieldState.selectedKey}
-                    onInputChange={onInputChange}
-                    onSelectionChange={onSelectionChange}
+                    inputValue={fieldStateEdit.inputValue}
+                    items={fieldStateEdit.items}
+                    selectedKey={fieldStateEdit.selectedKey}
+                    onInputChange={onInputChangeEdit}
+                    onSelectionChange={onSelectionChangeEdit}
                   >
                     {(item) => (
                       <AutocompleteItem key={item.id} value={item.id}>
