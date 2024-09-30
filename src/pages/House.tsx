@@ -206,7 +206,7 @@ export default function House() {
       case "actions":
         return (
           <div className="relative flex items-center gap-2">
-            <Tooltip content="Edit user">
+            <Tooltip content="Edit House">
               <span
                 className="text-lg text-default-400 cursor-pointer active:opacity-50"
                 onClick={() => handleEditOpen(house)}
@@ -361,7 +361,7 @@ export default function House() {
       </div>
       <div className="flex justify-between items-center">
         <span className="text-default-400 text-small">
-          Total {houses.length} categories
+          Total {houses.length} Rumah
         </span>
         <label className="flex items-center text-default-400 text-small">
           Rows per page:
@@ -394,7 +394,14 @@ export default function House() {
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault()
-    alert("Data berhasil ditambahkan")
+    const areRequiredFieldsFilled = () => {
+      return formData.address && formData.status && formData.start_date
+    }
+
+    if (!areRequiredFieldsFilled()) {
+      alert("Please fill all required fields.")
+      return
+    }
     const response = await fetch("api/houses", {
       method: "POST",
       headers: {
@@ -421,8 +428,10 @@ export default function House() {
 
       const housesData = await reloadResponse.json()
       if (housesData.error) {
+        alert(housesData.message)
         toast.error("Gagal memuat ulang data rumah.")
       } else {
+        alert("Berhasil menambahkan rumah.")
         setHouses(housesData.houses) // Update state dengan semua data houses
         setFormData({}) // Reset form
         onClose() // Tutup modal
@@ -484,7 +493,6 @@ export default function House() {
 
   const onSelectionChange = (key: React.Key) => {
     const selectedUser = selectUser.find((user) => user.id === Number(key))
-    console.log("selectedUser", selectedUser)
 
     setFormData((prev) => ({
       ...prev,

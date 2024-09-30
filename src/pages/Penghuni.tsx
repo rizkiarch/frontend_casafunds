@@ -129,11 +129,11 @@ export default function Penghuni() {
       header: "Email",
       sortable: true,
     },
-    {
-      key: "role",
-      header: "Role",
-      sortable: true,
-    },
+    // {
+    //   key: "role",
+    //   header: "Role",
+    //   sortable: true,
+    // },
     {
       key: "status",
       header: "Status",
@@ -362,6 +362,7 @@ export default function Penghuni() {
     const data = await response.json()
 
     if (data.error) {
+      alert(data.message)
       toast.error(data.message)
       setEditErrors(data.errors)
     } else {
@@ -445,7 +446,7 @@ export default function Penghuni() {
       </div>
       <div className="flex justify-between items-center">
         <span className="text-default-400 text-small">
-          Total {penghuni.length} categories
+          Total {penghuni.length} Penghuni
         </span>
         <label className="flex items-center text-default-400 text-small">
           Rows per page:
@@ -486,8 +487,11 @@ export default function Penghuni() {
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault()
+    if (!formData.full_name || !formData.phone_number) {
+      alert("Please fill all required fields")
+      return
+    }
     // try {
-    alert("Data berhasil ditambahkan")
     const response = await fetch("api/users", {
       method: "POST",
       headers: {
@@ -501,10 +505,11 @@ export default function Penghuni() {
     const data = await response.json()
 
     if (data.error) {
+      alert(data.message)
       toast.error(data.message)
       setErrors(data.errors)
     } else {
-      toast.success(data.message)
+      alert("Data berhasil ditambahkan")
       setPenghuni((prevPenghuni) => [...prevPenghuni, data.user])
       setFormData({})
       onClose()
@@ -605,6 +610,7 @@ export default function Penghuni() {
               <form onSubmit={handleCreate}>
                 <ModalBody>
                   <Input
+                    isRequired
                     type="text"
                     label="Full Name"
                     id="full_name"
@@ -621,6 +627,7 @@ export default function Penghuni() {
                   )}
 
                   <Input
+                    isRequired
                     type="text"
                     label="Phone Number"
                     id="phone_number"
@@ -682,7 +689,7 @@ export default function Penghuni() {
                     <p className="error">{errors.password}</p>
                   )}
 
-                  <Select
+                  {/* <Select
                     label="Select Role"
                     id="role"
                     variant="bordered"
@@ -700,9 +707,10 @@ export default function Penghuni() {
                         {role.key}
                       </SelectItem>
                     ))}
-                  </Select>
+                  </Select> */}
 
                   <Select
+                    isRequired
                     label="Select Status"
                     id="status"
                     variant="bordered"
@@ -723,6 +731,7 @@ export default function Penghuni() {
                   </Select>
 
                   <Select
+                    isRequired
                     label="Select Married Status"
                     id="married_status"
                     variant="bordered"
@@ -770,6 +779,7 @@ export default function Penghuni() {
               <form onSubmit={handleEdit}>
                 <ModalBody>
                   <Input
+                    isRequired
                     type="text"
                     label="Full Name"
                     id="full_name"
@@ -789,6 +799,7 @@ export default function Penghuni() {
                   )}
 
                   <Input
+                    isRequired
                     type="text"
                     label="Phone Number"
                     id="phone_number"
@@ -845,7 +856,7 @@ export default function Penghuni() {
                     <p className="error">{editErrors.email}</p>
                   )}
 
-                  <Select
+                  {/* <Select
                     label="Select Role"
                     id="role"
                     variant="bordered"
@@ -863,9 +874,10 @@ export default function Penghuni() {
                         {role.key}
                       </SelectItem>
                     ))}
-                  </Select>
+                  </Select> */}
 
                   <Select
+                    isRequired
                     label="Select Status"
                     id="status"
                     variant="bordered"
@@ -886,6 +898,7 @@ export default function Penghuni() {
                   </Select>
 
                   <Select
+                    isRequired
                     label="Select Married Status"
                     id="married_status"
                     variant="bordered"

@@ -26,8 +26,6 @@ export default function Dashboard() {
       const result = await fetch("/api/bar-chart")
       const responseData = await result.json()
 
-      console.log(responseData)
-
       if (result.ok && responseData.result === "ok") {
         const { labels, datasets } = responseData.data
 
@@ -73,7 +71,10 @@ export default function Dashboard() {
   return (
     <>
       <div>
-        <h2>Dashboard</h2>
+        <h2 style={{ textAlign: "center" }}>
+          {" "}
+          <b>Total Pengeluaran Selama 1 Tahun</b>
+        </h2>
         <Bar data={chartData} options={options} />
       </div>
       <div>

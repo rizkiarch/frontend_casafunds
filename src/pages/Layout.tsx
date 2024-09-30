@@ -40,7 +40,6 @@ export default function Layout() {
     })
 
     const data = await result.json()
-    console.log(data)
 
     if (result.ok) {
       setUser(null)
@@ -130,9 +129,11 @@ export default function Layout() {
         </NavbarMenu>
       </Navbar>
 
-      <main className="max-w-screen-lg mx-auto px-4 py-6">
-        <Outlet />
-      </main>
+      <div className="container mx-auto px-4 py-6">
+        <main className="max-w-screen-lg mx-auto">
+          <Outlet />
+        </main>
+      </div>
     </>
   )
 }

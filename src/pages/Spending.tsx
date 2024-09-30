@@ -236,7 +236,7 @@ export default function Spending() {
         <Input
           isClearable
           className="w-full sm:max-w-[44%]"
-          placeholder="Search by name/address..."
+          placeholder="Search by name"
           startContent={<SearchIcon />}
           value={filterValue}
           onClear={onClear}
@@ -255,7 +255,7 @@ export default function Spending() {
       </div>
       <div className="flex justify-between items-center">
         <span className="text-default-400 text-small">
-          Total {spendings.length} categories
+          Total {spendings.length} Catatan Pengeluaran
         </span>
         <label className="flex items-center text-default-400 text-small">
           Rows per page:
@@ -374,17 +374,11 @@ export default function Spending() {
     items: selectCategory,
   })
 
-  console.log(selectCategory)
-
-  //   console.log("fieldStateCreate", fieldStateCreate)
-
   const onSelectionChangeCreate = (key: React.Key | null) => {
     if (key === null) return
     const selectedCategory = selectCategory.find(
       (category) => category.id === Number(key)
     )
-
-    console.log("selectedCategory", selectedCategory)
 
     setFormData((prev) => ({
       ...prev,
@@ -456,7 +450,7 @@ export default function Spending() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Add New Rumah
+                Add Catatan Pengeluaran
               </ModalHeader>
               <form onSubmit={handleCreate}>
                 <ModalBody>

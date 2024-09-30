@@ -309,7 +309,7 @@ export default function Payment() {
       </div>
       <div className="flex justify-between items-center">
         <span className="text-default-400 text-small">
-          Total {payments.length} categories
+          Total {payments.length} Catatan Pembayaran
         </span>
         <label className="flex items-center text-default-400 text-small">
           Rows per page:
@@ -331,7 +331,7 @@ export default function Payment() {
   const token = useContext(AppContext)
   const [formData, setFormData] = useState<FormData>({
     house_id: 0,
-    user_id: null,
+    user_id: 0,
     payment_date: "",
     iuran_kebersihan: 0,
     iuran_satpam: 0,
@@ -342,6 +342,14 @@ export default function Payment() {
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault()
+    const areRequiredFieldsFilled = () => {
+      return formData.user_id && formData.house_id && formData.payment_date
+    }
+
+    if (!areRequiredFieldsFilled()) {
+      alert("Please fill all required fields.")
+      return
+    }
 
     const response = await fetch("/api/payments", {
       method: "POST",
@@ -373,8 +381,16 @@ export default function Payment() {
       if (reloadData.error) {
         alert(reloadData.error)
       } else {
+        alert("Data berhasil ditambahkan")
         setPayments(reloadData.payments)
-        setFormData({})
+        setFormData({
+          house_id: 0,
+          user_id: 0,
+          payment_date: "",
+          iuran_kebersihan: 0,
+          iuran_satpam: 0,
+          description: "",
+        })
         onClose()
       }
     }
@@ -430,8 +446,6 @@ export default function Payment() {
     inputValue: "",
     items: selectUser,
   })
-
-  console.log(selectUser)
 
   const onSelectionChangeUserCreate = (key: React.Key | null) => {
     if (key === null) return
@@ -554,11 +568,12 @@ export default function Payment() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Add New Rumah
+                Add New Catatan Pembayaran
               </ModalHeader>
               <form onSubmit={handleCreate}>
                 <ModalBody>
                   <Autocomplete
+                    isRequired
                     variant="bordered"
                     label="Select Penghuni"
                     className="mb-4"
@@ -576,6 +591,7 @@ export default function Payment() {
                   </Autocomplete>
 
                   <Autocomplete
+                    isRequired
                     variant="bordered"
                     label="Select Alamat Rumah"
                     className="mb-4"
@@ -593,6 +609,7 @@ export default function Payment() {
                   </Autocomplete>
 
                   <Input
+                    isRequired
                     type="number"
                     label="Iuran Kebersihan"
                     id="iuran_kebersihan"
@@ -612,6 +629,7 @@ export default function Payment() {
                   />
 
                   <Input
+                    isRequired
                     type="number"
                     label="Iuran Keamanan"
                     id="iuran_keamanan"

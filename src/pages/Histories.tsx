@@ -51,8 +51,8 @@ export default function Histories() {
   const [page, setPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "full_name",
-    direction: "ascending",
+    column: "start_date",
+    direction: "descending",
   })
 
   const hasSearchFilter = Boolean(filterValue)
@@ -211,7 +211,7 @@ export default function Histories() {
       </div>
       <div className="flex justify-between items-center">
         <span className="text-default-400 text-small">
-          Total {histories.length} categories
+          Total {histories.length} Riwayat Rumah
         </span>
         <label className="flex items-center text-default-400 text-small">
           Rows per page:
@@ -273,7 +273,10 @@ export default function Histories() {
   )
   return (
     <div>
-      <h1>histories</h1>
+      <h2 style={{ textAlign: "center" }}>
+        {" "}
+        <b>Riwayat Rumah</b>
+      </h2>
       <Table
         aria-label="Example table with client side sorting"
         isHeaderSticky
