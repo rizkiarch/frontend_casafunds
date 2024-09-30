@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Bar } from "react-chartjs-2"
 import {
   Chart as ChartJS,
@@ -10,19 +10,17 @@ import {
   Legend,
 } from "chart.js"
 
-// Registering necessary components for Chart.js
+import Histories from "./Histories"
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 export default function Dashboard() {
-  // State untuk menyimpan data chart
+  // start chart
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [],
   })
-
-  const [loading, setLoading] = useState(true) // Optional: untuk menandai proses loading data
-
-  // Fungsi untuk mengambil data bar chart dari API
+  const [isLoading, setLoading] = useState(true)
   async function fetchBarChartData() {
     try {
       const result = await fetch("/api/bar-chart")
@@ -49,12 +47,9 @@ export default function Dashboard() {
       setLoading(false) // Selesai loading
     }
   }
-
   useEffect(() => {
     fetchBarChartData()
   }, [])
-
-  // Opsi konfigurasi chart
   const options = {
     responsive: true,
     plugins: {
@@ -72,13 +67,18 @@ export default function Dashboard() {
       },
     },
   }
-
-  if (loading) return <p>Loading chart...</p> // Tampilan loading saat data masih diambil
+  if (isLoading) return <span>Loading</span>
+  // end chart
 
   return (
-    <div>
-      <h2>Dashboard</h2>
-      <Bar data={chartData} options={options} />
-    </div>
+    <>
+      <div>
+        <h2>Dashboard</h2>
+        <Bar data={chartData} options={options} />
+      </div>
+      <div>
+        <Histories />
+      </div>
+    </>
   )
 }

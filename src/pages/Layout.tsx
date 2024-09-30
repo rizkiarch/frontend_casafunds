@@ -17,7 +17,6 @@ export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const menuItems = [
     { label: "Dashboard", path: "/" },
@@ -26,7 +25,6 @@ export default function Layout() {
     { label: "Pembayaran", path: "/pembayaran" },
     { label: "Pengeluaran", path: "/pengeluaran" },
     { label: "Categori", path: "/categories" },
-    { label: "Account", path: "/account" },
   ]
 
   async function handleLogout(e: FormEvent) {
@@ -58,41 +56,47 @@ export default function Layout() {
         isBordered
         isMenuOpen={isMenuOpen}
         onMenuOpenChange={setIsMenuOpen}
+        className="px-4 md:px-6 lg:px-8"
       >
         {user ? (
           <>
+            {/* Toggle Menu for Mobile */}
             <NavbarContent className="lg:hidden" justify="start">
               <NavbarMenuToggle
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               />
             </NavbarContent>
 
-            <NavbarContent className="hidden pr-3" justify="center">
+            {/* Brand, di kiri untuk semua ukuran layar */}
+            <NavbarContent justify="start">
               <NavbarBrand>
                 <p className="font-bold text-inherit">CASAFUNDS</p>
               </NavbarBrand>
             </NavbarContent>
-            <NavbarContent className=" sm:flex gap-4" justify="center">
-              <NavbarBrand>
-                <p className="font-bold text-inherit">CASAFUNDS</p>
-              </NavbarBrand>
 
+            {/* Menu Items pada layar desktop */}
+            <NavbarContent className="hidden lg:flex gap-4" justify="center">
               {menuItems.map((item, index) => (
                 <NavbarItem
                   key={index}
                   isActive={location.pathname === item.path}
                 >
-                  <Link color="foreground" to={item.path}>
+                  <Link className="text-lg" to={item.path}>
                     {item.label}
                   </Link>
                 </NavbarItem>
               ))}
             </NavbarContent>
 
+            {/* Logout Button */}
             <NavbarContent justify="end">
               <NavbarItem>
                 <form onSubmit={handleLogout}>
-                  <Button color="warning" className="btn btn-sm" type="submit">
+                  <Button
+                    color="warning"
+                    className="btn btn-sm lg:btn-md"
+                    type="submit"
+                  >
                     Log Out
                   </Button>
                 </form>
@@ -101,8 +105,10 @@ export default function Layout() {
           </>
         ) : (
           <NavbarContent justify="end">
-            <NavbarItem className="lg:flex">
-              <Link to="/login">Login</Link>
+            <NavbarItem>
+              <Link to="/login" className="text-lg">
+                Login
+              </Link>
             </NavbarItem>
             <NavbarItem>
               <Button as={Link} color="warning" to="/register" variant="flat">
@@ -112,6 +118,7 @@ export default function Layout() {
           </NavbarContent>
         )}
 
+        {/* Mobile Menu */}
         <NavbarMenu>
           {menuItems.map((item, index) => (
             <NavbarItem key={index} isActive={location.pathname === item.path}>
@@ -123,38 +130,9 @@ export default function Layout() {
         </NavbarMenu>
       </Navbar>
 
-      <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
+      <main className="max-w-screen-lg mx-auto px-4 py-6">
         <Outlet />
       </main>
     </>
   )
-}
-
-{
-  /* <nav>
-          <Link to="/" className="nav-link">
-            Home
-          </Link>
-
-          {user ? (
-            <div className="flex items-center space-x-4">
-              <p className="text-slate-400 text-xs">Welcome back {user.name}</p>
-              <Link to="/create" className="nav-link">
-                New Post
-              </Link>
-              <form onSubmit={handleLogout}>
-                <button className="nav-link">Logout</button>
-              </form>
-            </div>
-          ) : (
-            <div className="space-x-4">
-              <Link to="/register" className="nav-link">
-                Register
-              </Link>
-              <Link to="/login" className="nav-link">
-                Login
-              </Link>
-            </div>
-          )}
-        </nav> */
 }
