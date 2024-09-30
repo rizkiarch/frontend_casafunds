@@ -93,8 +93,6 @@ export default function House() {
     getHouses()
   }, [])
 
-  // console.log(houses)
-
   useEffect(() => {
     const getUsers = async () => {
       const response = await fetch("/api/users")
@@ -149,7 +147,6 @@ export default function House() {
 
   const renderCell = (house: HouseType, columnKey: React.Key) => {
     const cellValue = house[columnKey as keyof HouseType]
-    console.log(house)
 
     const formatDate = (date: string | Date) => {
       if (!date) return "Tanggal Tidak Tersedia"
@@ -304,12 +301,6 @@ export default function House() {
           )
         })
       : houses
-
-    //       house.address
-    //         .toLocaleLowerCase()
-    //         .includes(filterValue.toLocaleLowerCase())
-    //     )
-    //   : houses
   }, [houses, filterValue, hasSearchFilter])
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage)
@@ -493,6 +484,8 @@ export default function House() {
 
   const onSelectionChange = (key: React.Key) => {
     const selectedUser = selectUser.find((user) => user.id === Number(key))
+    console.log("selectedUser", selectedUser)
+
     setFormData((prev) => ({
       ...prev,
       user: selectedUser || { id: 0, full_name: "" },
@@ -528,8 +521,6 @@ export default function House() {
     inputValue: "",
     items: selectUser,
   })
-
-  // console.log(fieldStateEdit.selectedKey)
 
   const onSelectionChangeEdit = (key) => {
     const selectedUser = selectUser.find((user) => user.id === Number(key))

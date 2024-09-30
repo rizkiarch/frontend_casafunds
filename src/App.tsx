@@ -8,7 +8,8 @@ import Register from "./pages/auth/Register"
 import Categories from "./pages/Categories"
 import Penghuni from "./pages/Penghuni"
 import House from "./pages/House"
-import Payement from "./pages/Payement"
+import Payment from "./pages/Payment"
+import Spending from "./pages/Spending"
 
 function App() {
   const { user } = useContext(AppContext)!
@@ -26,7 +27,11 @@ function App() {
 
           <Route path="/penghuni" element={user ? <Penghuni /> : <Login />} />
           <Route path="/rumah" element={user ? <House /> : <Login />} />
-          <Route path="/pembayaran" element={user ? <Payement /> : <Login />} />
+          <Route path="/pembayaran" element={user ? <Payment /> : <Login />} />
+          <Route
+            path="/pengeluaran"
+            element={user ? <Spending /> : <Login />}
+          />
           <Route
             path="/categories"
             element={user ? <Categories /> : <Login />}
