@@ -49,7 +49,7 @@ export default function Histories() {
 
   const [filterValue, setFilterValue] = useState("")
   const [page, setPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "start_date",
     direction: "descending",
