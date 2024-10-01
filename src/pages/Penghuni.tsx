@@ -36,7 +36,7 @@ type PenghuniType = {
   id: number
   full_name: string
   phone_number: string
-  //   photo_url: string
+  photo_ktp: string
 
   username: string
   email: string
@@ -248,7 +248,7 @@ export default function Penghuni() {
       case "photo_url":
         return (
           <img
-            src={penghuni.photo_url}
+            src={penghuni.photo_ktp}
             alt={penghuni.full_name}
             width="50"
             height="50"
